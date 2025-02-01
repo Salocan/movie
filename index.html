@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synchronized Movie Streaming</title>
+    <script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js"></script>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        iframe {
+            width: 80%;
+            height: 500px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Synchronized Movie Streaming</h1>
+    <iframe id="movieFrame" src="https://drive.google.com/file/d/1nGWvbdO3YdOU0c5p1HsOWyrzXaZHcBEj/preview" allowfullscreen></iframe>
+    <br>
+    <button onclick="pauseVideo()">Pause</button>
+    <button onclick="playVideo()">Play</button>
+
+    <script>
+        // 🔥 Firebase Configuration
+        const firebaseConfig = {
+    apiKey: "AIzaSyCuAOxJNvMKSri2Stin15UwrEYHEUzKe14",
+    authDomain: "movies-9857d.firebaseapp.com",
+    databaseURL: "https://movies-9857d-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "movies-9857d",
+    storageBucket: "movies-9857d.firebasestorage.app",
+    messagingSenderId: "471235662225",
+    appId: "1:471235662225:web:b4b3d8eea517c4f5bb4a30"
+  };
+        // 🔥 Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const movieFrame = document.getElementById('movieFrame');
+
+        // 🔄 Sync playback state
+        function updatePlayback(state) {
+            db.ref('movie').set(state);
+        }
+
+        function pauseVideo() {
+            updatePlayback({ action: 'pause' });
+        }
+
+        function playVideo() {
+            updatePlayback({ action: 'play' });
+        }
+
+        // 📡 Listen for changes in playback state
+        db.ref('movie').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data.action === 'pause') {
+                movieFrame.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            } else if (data.action === 'play') {
+                movieFrame.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -13,7 +13,7 @@
             text-align: center;
             font-family: Arial, sans-serif;
         }
-        iframe {
+        video {
             width: 80%;
             height: 500px;
             border: none;
@@ -22,7 +22,10 @@
 </head>
 <body>
     <h1>Synchronized Movie Streaming</h1>
-    <iframe id="movieFrame" src="https://drive.google.com/file/d/1nGWvbdO3YdOU0c5p1HsOWyrzXaZHcBEj/preview" allowfullscreen></iframe>
+    <video id="moviePlayer" controls>
+        <source src="https://YOUR_DIRECT_GOOGLE_DRIVE_LINK.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
     <br>
     <button onclick="pauseVideo()">Pause</button>
     <button onclick="playVideo()">Play</button>
@@ -30,42 +33,55 @@
     <script>
         // 🔥 Firebase Configuration
         const firebaseConfig = {
-    apiKey: "AIzaSyCuAOxJNvMKSri2Stin15UwrEYHEUzKe14",
-    authDomain: "movies-9857d.firebaseapp.com",
-    databaseURL: "https://movies-9857d-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "movies-9857d",
-    storageBucket: "movies-9857d.firebasestorage.app",
-    messagingSenderId: "471235662225",
-    appId: "1:471235662225:web:b4b3d8eea517c4f5bb4a30"
-  };
+            apiKey: "AIzaSyCuAOxJNvMKSri2Stin15UwrEYHEUzKe14",
+            authDomain: "movies-9857d.firebaseapp.com",
+            databaseURL: "https://movies-9857d-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "movies-9857d",
+            storageBucket: "movies-9857d.firebasestorage.app",
+            messagingSenderId: "471235662225",
+            appId: "1:471235662225:web:b4b3d8eea517c4f5bb4a30"
+        };
+        
         // 🔥 Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const movieFrame = document.getElementById('movieFrame');
+        const video = document.getElementById("moviePlayer");
 
-        // 🔄 Sync playback state
+        // 📡 Sync playback state
         function updatePlayback(state) {
-            db.ref('movie').set(state);
+            db.ref("movie").update(state);
         }
 
         function pauseVideo() {
-            updatePlayback({ action: 'pause' });
+            updatePlayback({ action: "pause", time: video.currentTime });
         }
 
         function playVideo() {
-            updatePlayback({ action: 'play' });
+            updatePlayback({ action: "play", time: video.currentTime });
         }
 
-        // 📡 Listen for changes in playback state
-        db.ref('movie').on('value', (snapshot) => {
+        // 🔄 Listen for playback changes in Firebase
+        db.ref("movie").on("value", (snapshot) => {
             const data = snapshot.val();
-            if (data.action === 'pause') {
-                movieFrame.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-            } else if (data.action === 'play') {
-                movieFrame.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+            if (data) {
+                if (Math.abs(video.currentTime - data.time) > 1) {
+                    video.currentTime = data.time; // Sync time position
+                }
+                if (data.action === "pause") {
+                    video.pause();
+                } else if (data.action === "play") {
+                    video.play();
+                }
             }
         });
+
+        // 🔄 Continuously update time in Firebase while playing
+        setInterval(() => {
+            if (!video.paused) {
+                updatePlayback({ action: "play", time: video.currentTime });
+            }
+        }, 2000); // Every 2 seconds
     </script>
 </body>
 </html>

@@ -3,89 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synchronized Movie Streaming</title>
-    <script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js"></script>
+    <title>NickHub - Movie Streaming</title>
     <style>
         body {
-            background-color: black;
-            color: white;
             text-align: center;
             font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            padding: 0;
         }
-        h1 {
-            font-size: 36px;
+        .header {
+            font-size: 2em;
             font-weight: bold;
+            margin: 20px 0;
         }
         .orange {
             color: orange;
         }
-        video {
+        .movie-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+        }
+        iframe {
             width: 80%;
-            height: 500px;
+            height: 80vh;
             border: none;
         }
     </style>
 </head>
 <body>
-    <h1><span class="orange">Nick</span> hub</h1>
-    <video id="moviePlayer" autoplay muted controls>
-        <source src="https://drive.google.com/uc?export=download&id=1YnDJaFt_FvjxVQftSy73Rs0BOM2u16_b" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-
-    <script>
-        // 🔥 Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCuAOxJNvMKSri2Stin15UwrEYHEUzKe14",
-            authDomain: "movies-9857d.firebaseapp.com",
-            databaseURL: "https://movies-9857d-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "movies-9857d",
-            storageBucket: "movies-9857d.firebasestorage.app",
-            messagingSenderId: "471235662225",
-            appId: "1:471235662225:web:b4b3d8eea517c4f5bb4a30"
-        };
-
-        // 🔥 Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        const video = document.getElementById("moviePlayer");
-
-        // 📡 Sync playback state
-        function updatePlayback(state) {
-            db.ref("movie").update(state);
-        }
-
-        function pauseVideo() {
-            updatePlayback({ action: "pause", time: video.currentTime });
-        }
-
-        function playVideo() {
-            updatePlayback({ action: "play", time: video.currentTime });
-        }
-
-        // 🔄 Listen for playback changes in Firebase
-        db.ref("movie").on("value", (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                if (Math.abs(video.currentTime - data.time) > 1) {
-                    video.currentTime = data.time; // Sync time position
-                }
-                if (data.action === "pause") {
-                    video.pause();
-                } else if (data.action === "play") {
-                    video.play();
-                }
-            }
-        });
-
-        // 🔄 Continuously update time in Firebase while playing
-        setInterval(() => {
-            if (!video.paused) {
-                updatePlayback({ action: "play", time: video.currentTime });
-            }
-        }, 2000); // Every 2 seconds
-    </script>
+    <div class="header">
+        <span class="orange">Nick</span>Hub
+    </div>
+    <div class="movie-container">
+        <iframe src="https://drive.google.com/file/d/1YnDJaFt_FvjxVQftSy73Rs0BOM2u16_b/preview" allowfullscreen></iframe>
+    </div>
 </body>
 </html>
